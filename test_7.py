@@ -1,8 +1,9 @@
-#! -coding:utf8 -*-
+#coding=utf-8
+
+#利用多线程下载文件，参数是文件的url地址 http://10.16.16.17/performance/mutifile.rar
 import threading,sys
 import requests
 import time
-import os
 
 class MulThreadDownload(threading.Thread):
     def __init__(self,url,startpos,endpos,f):
@@ -15,60 +16,46 @@ class MulThreadDownload(threading.Thread):
     def download(self):
         print("start thread:%s at %s" % (self.getName(), time.time()))
         headers = {"Range":"bytes=%s-%s"%(self.startpos,self.endpos)}
-        res = requests.get(self.url,headers=headers)
-        # res.text 是将get获取的byte类型数据自动编码，是str类型， res.content是原始的byte类型数据
-        # 所以下面是直接write(res.content)
+        #request下载大文件时，用stream模式
+        res = requests.get(self.url,headers=headers,stream=True)
+        lock.acquire()
         self.fd.seek(self.startpos)
-        self.fd.write(res.content)
+        for chunk in res.iter_content(chunk_size=512):
+            if chunk:
+                self.fd.write(chunk)
+        lock.release()
         print("stop thread:%s at %s" % (self.getName(), time.time()))
-        # f.close()
 
     def run(self):
         self.download()
 
 if __name__ == "__main__":
-    # url = sys.argv[1]
-    url='http://pic143.nipic.com/file/20171022/9802812_143734646036_2.jpg'
+    url = "http://10.16.16.17/performance/mutifile.rar"
     #获取文件的大小和文件名
     filename = url.split('/')[-1]
     filesize = int(requests.head(url).headers['Content-Length'])
     print("%s filesize:%s"%(filename,filesize))
 
     #线程数
-    threadnum = 2
-    #信号量，同时只允许3个线程运行
-    threading.BoundedSemaphore(threadnum)
-    # 默认3线程现在，也可以通过传参的方式设置线程数
+    threadnum =10
+
+    lock = threading.Lock()
     step = filesize // threadnum
     mtd_list = []
     start = 0
     end = -1
 
-    # 请空并生成文件
-    # if os.path.exists(filename):
-        # os.remove(filename)
-    # tempf = open(filename,'w')
-    # tempf.write('')
-    # tempf.close()
-    # rb+ ，二进制打开，可任意位置读写
+    # wb+ ，二进制打开，可任意位置读写
     with open(filename,'wb+') as  f:
-        fileno = f.fileno()
-        # 如果文件大小为11字节，那就是获取文件0-10的位置的数据。如果end = 10，说明数据已经获取完了。
         while end < filesize -1:
             start = end +1
             end = start + step -1
             if end > filesize:
-                end = filesize-1
+                end = filesize
             # print("start:%s, end:%s"%(start,end))
-            # 复制文件句柄
-            dup = os.dup(fileno)
-            # print(dup)
-            # 打开文件
-            fd = os.fdopen(dup,'rb+',-1)
-            # print(fd)
-            t = MulThreadDownload(url,start,end,fd)
-            t.start()
+            t = MulThreadDownload(url,start,end,f)
             mtd_list.append(t)
+            t.start()
 
         for i in  mtd_list:
             i.join()

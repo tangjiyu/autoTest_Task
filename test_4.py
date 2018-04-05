@@ -36,15 +36,17 @@ class mylist:
             if self.arr[i]==num:
                 self.arr=self.arr[:i]+self.arr[i+1:]
                 return self.arr
-                break
         else:
             print("%s not in arr." %num)
             return self.arr
 
     def mypop(self):
-        temp=self.arr[-1]
-        self.arr=self.arr[:-1]
-        return temp
+        try:
+            temp=self.arr[-1]
+            self.arr=self.arr[:-1]
+            return temp
+        except:
+            print('IndexError: pop from empty list')
 
     def myreserve(self):
         self.arr=self.arr[::-1]
@@ -60,4 +62,4 @@ print(a.myreserve())
 print(a.mysort())
 print(a.mycount(2))
 print(a.myremove(2))
-print(a.myremove(3))
+print(a.mypop())

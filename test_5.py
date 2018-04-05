@@ -7,6 +7,8 @@ a = {
      }
 b = {'1':{'2':{'3':('b1','b2','b3')}}}
 
+c={}
+
 def viewKeys(dic):
     if isinstance(dic,dict):
         for key in dic.keys():
@@ -15,5 +17,9 @@ def viewKeys(dic):
     else:
         print(dic)
 
+print 'a:'
 viewKeys(a)
+print 'b:'
 viewKeys(b)
+print 'c:'
+viewKeys(c)
