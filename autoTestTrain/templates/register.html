@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Register</title>
+</head>
+<body>
+
+<h1>Register</h1>
+<form method="post" action="/register">
+    <p>Name:<input type="text" name="name"></p>
+    <p>password:<input type="text" name="password1"></p>
+    <p>password again:<input type="text" name="password2"></p>
+    <input type="submit">
+</form>
+{% if error %}
+    {{ error }}
+{% end %}
+
+</body>
+</html>
