@@ -85,8 +85,10 @@ class registerHandler(BaseHandler):
         pw2=self.get_argument("password1")
         if pw1!=pw2:
             self.render('register.html',error='两次密码不一致')
+        if register(name,pw1):
+            self.redirect("/login.html",error='注册成功，请登录')
         else:
-            self.redirect("/login.html")
+            self.render('register.html', error='用户名已注册或者其他错误')
 
 if __name__ == "__main__":
     tornado.options.parse_command_line()
